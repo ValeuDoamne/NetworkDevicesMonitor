@@ -1,0 +1,4 @@
+[module]
+socket_file = "/tmp/agent.pid"
+timeout     = 1
+files       = ["/var/log/messages"]
