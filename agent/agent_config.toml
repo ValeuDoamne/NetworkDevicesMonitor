@@ -1,0 +1,8 @@
+[agent]
+socket_file	= "/tmp/agent.pid" # optional: default set to "/run/agentd.pid"
+modules		= ["logger"]
+
+[server]
+hostname        = "127.0.0.1" # required
+port            = 8888        # required
+secure          = true        # default set to true 
