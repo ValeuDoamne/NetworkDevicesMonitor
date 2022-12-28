@@ -49,7 +49,7 @@ void net::client::connect_local()
 		error_handle("connect: Cannot bind socket");
 	}
 	struct sockaddr_un local_server;
-	bzero(local_server.sun_path, sizeof(sockaddr_un));
+	bzero(&local_server, sizeof(sockaddr_un));
 	local_server.sun_family = AF_UNIX;
 	strncpy(local_server.sun_path, this->host.c_str(), this->host.length());
 	socklen_t local_server_len = sizeof(local_server);

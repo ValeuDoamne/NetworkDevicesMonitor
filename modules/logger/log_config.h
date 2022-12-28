@@ -6,7 +6,8 @@ struct Config {
 	std::string agent_socket_file;
 	std::vector<std::string> files;
 	int timeout = 0;
-
+	std::string create_table;
+	std::string table_name;
 };
 
 void parse_configuration(Config& configuration, const std::string& config_path)
@@ -17,6 +18,8 @@ void parse_configuration(Config& configuration, const std::string& config_path)
 
 		configuration.agent_socket_file   = tbl["module"]["socket_file"].value_or("");
 		configuration.timeout             = tbl["module"]["timeout"].value_or(0);
+		configuration.create_table        = tbl["module"]["create_table"].value_or("");
+		configuration.table_name          = tbl["module"]["table_name"].value_or("logs");
 
 		if(toml::array *arr = tbl["module"]["files"].as_array())
 		{

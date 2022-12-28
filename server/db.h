@@ -5,8 +5,13 @@
 
 pqxx::connection *db_connection;
 
-void connect_to_database(const Config& configuration)
+class DB_CONN
 {
-	db_connection = new pqxx::connection{"postgresql://"+configuration.username+":"+configuration.password+"@"+configuration.db_host+":"+std::to_string(configuration.db_port)+"/"+configuration.db_name};
-		
-}
+	private:
+		static pqxx::connection *db_connection;
+	public:
+		pqxx::connection instance() {
+			if(db_connection == nullptr)
+				db_connection = pqxx::connection{};
+		}
+};

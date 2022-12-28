@@ -3,82 +3,66 @@
 #include <json/json.h>
 #include <future>
 #include <sys/wait.h>
+#include <cstdarg>
 
 #include "network/network.h"
 #include "network/server.h"
 
 #include <pqxx/pqxx>
 
-#include "server_config.h"
+#include "headers/server_config.h"
 
 
 pqxx::connection *db_connection;
 
+
 void create_table(const Json::Value& agent_value)
 {
-	auto table_name = agent_value["table_name"].as<std::string>();
-	std::cout << table_name << std::endl;
-	pqxx::work dbwork{*db_connection};
-	std::string query = "CREATE TABLE " + dbwork.esc(table_name) + "(";
-	
-	auto array = agent_value["columns"];
-	
-	for(int i = 0; i < array.size(); i++)
+	std::string query = "CREATE TABLE IF NOT EXISTS " + db_connection->esc(agent_value["table_name"].as<std::string>())+"(id SERIAL PRIMARY KEY, host INET, date DATE, ";
+	auto columns = agent_value["columns"];
+	for(int i = 0; i < columns.size(); i++)
 	{
-		auto column_name = array[i].as<std::string>();
-		if(column_name.find(')') != std::string::npos)
-		{
-			std::cerr << "SQLi detected\n";
-			return;
-		}
-		if(i != array.size()-1)
-			query += dbwork.esc(column_name) + ", ";
-		else 
-			query += dbwork.esc(column_name) + ");"; 
+		auto column_name = columns[i]["column_name"].as<std::string>();
+		auto column_type = columns[i]["type"].as<std::string>();
+		
+		if(i != columns.size()-1)
+			query += db_connection->esc(column_name) + " " + column_type + ", ";
+		else
+			query += db_connection->esc(column_name) + " " + column_type + ");";
 	}
-	
-	std::cerr << "[DEBUG]: Query is: " << query << std::endl;
-	dbwork.exec(query);
-	dbwork.commit();
 
-	std::cout << "[INFO]: " << "Table succesfully created: " << table_name << std::endl;
+	std::cerr << "[DEBUG]: Query:" << query << std::endl;
+	std::cerr.flush();
+
+	pqxx::work txn{*db_connection};
+	txn.exec(query);
+	txn.commit();
 }
 
-#include <cstdarg>
-
-std::string format_query(const char *format, ...)
-{
-	char *buffer = nullptr;
-	size_t buffer_size = 0;
-	va_list ap;
-	
-	va_start(ap, format);
-	buffer_size = vsnprintf(buffer, buffer_size, format, ap);
-	va_end(ap);
-
-	buffer = new char[buffer_size+1];
-	va_start(ap, format);
-	buffer_size = vsnprintf(buffer, buffer_size, format, ap);
-	va_end(ap);
-	
-	std::string s = std::string(buffer);
-	delete[] buffer;
-	return s;
-}
 
 void insert_table(const Json::Value& agent_value, const std::string& host_str)
 {
-	static std::binary_semaphore critical_section{0};
-	pqxx::work txn{*db_connection};
-	auto table_name = agent_value["table_name"].as<std::string>();
-	auto date       = agent_value["date"].as<std::string>();
-	auto msg        = agent_value["msg"].as<std::string>();
-	auto file       = agent_value["file"].as<std::string>();
 	
-	std::string query = format_query("INSERT INTO %s(date, file, host, msg) VALUES ('%s', '%s', '%s', '%s');", txn.esc(table_name).c_str(), txn.esc(date).c_str(), txn.esc(file).c_str(), txn.esc(host_str).c_str(), txn.esc(msg).c_str());
-
+	pqxx::work txn{*db_connection};
+	std::string query = "INSERT INTO "+txn.esc(agent_value["table_name"].as<std::string>())+"(host, date, ";
+	std::string values = " VALUES ('" + host_str + "', CURRENT_DATE, " ;
+	auto columns = agent_value["columns"];
+	for(int i = 0; i < columns.size(); i++)
+	{
+		auto column_name = columns[i]["column_name"].as<std::string>();
+		auto information = columns[i]["information"].as<std::string>();
+		if(i != columns.size() - 1) {
+			query += column_name + ",";
+			values += "'" + txn.esc(information) + "',";
+		}
+		else {
+			query += column_name + ")";
+			values += "'"+txn.esc(information) + "');";
+		}
+	}
+	query += values;
 	std::cout << "Query: " << query << std::endl;
-
+	
 	txn.exec(query);
 	txn.commit();
 }
@@ -111,6 +95,7 @@ void handle_agent(const std::string& thread_id, net::accepted_client& agent)
 		}
 		process_json(agent_value, agent.get_host());
 	}
+	agent.close_connection();
 }
 
 
@@ -121,11 +106,12 @@ void server(const Config& configuration)
 	if(configuration.server_secure_connection)
 		agent_server.set_certificate_path(configuration.server_certificate, configuration.server_certificate_key);
 	agent_server.listen();
+	
 	int thread_id = 0;
 	while(true)
 	{
 		net::accepted_client agent = agent_server.accept_connection();
-		auto t = std::async(handle_agent, "Thread #0", std::ref(agent));
+		auto t = std::async(handle_agent, "Thread #"+std::to_string(thread_id), std::ref(agent));
 	}
 	agent_server.close_connection();
 	
