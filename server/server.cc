@@ -54,8 +54,7 @@ void insert_table(const Json::Value& agent_value, const std::string& host_str)
 		if(i != columns.size() - 1) {
 			query += column_name + ",";
 			values += "'" + txn.esc(information) + "',";
-		}
-		else {
+		} else {
 			query += column_name + ")";
 			values += "'"+txn.esc(information) + "');";
 		}
@@ -70,11 +69,9 @@ void insert_table(const Json::Value& agent_value, const std::string& host_str)
 void process_json(const Json::Value& agent_value, const std::string& host_str)
 {
 	auto command = agent_value["cmd"].as<std::string>();
-	if(command == "create_table")
-	{
+	if(command == "create_table") {
 		create_table(agent_value);
-	} else if(command == "insert_table")
-	{
+	} else if(command == "insert_table") {
 		insert_table(agent_value, host_str);
 	}
 }
@@ -85,14 +82,14 @@ void handle_agent(const std::string& thread_id, net::accepted_client& agent)
 		auto json = agent.receive_message();
 		std::cout << "Received from agent: " << json << std::endl;
 		Json::Value agent_value;
-		try{
+		try {
 			std::istringstream stream(json);
 			stream >> agent_value;
-		} catch (const std::exception& e)
-		{
+		} catch (const std::exception& e) {
 			std::cerr << "[Error]: " << e.what() << std::endl;
 			continue; // not valid json
 		}
+		std::cout << agent_value.toStyledString() << std::endl;
 		process_json(agent_value, agent.get_host());
 	}
 	agent.close_connection();
@@ -111,7 +108,7 @@ void server(const Config& configuration)
 	while(true)
 	{
 		net::accepted_client agent = agent_server.accept_connection();
-		auto t = std::async(handle_agent, "Thread #"+std::to_string(thread_id), std::ref(agent));
+		auto t = std::async(handle_agent, "Thread #"+std::to_string(thread_id++), std::ref(agent));
 	}
 	agent_server.close_connection();
 	

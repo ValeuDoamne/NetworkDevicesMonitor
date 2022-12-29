@@ -1,7 +1,7 @@
 
 CXX:=g++
 CXXFLAGS:=-O2 -Wall -ggdb
-LDFLAGS:=-lcrypto -lssl
+LDFLAGS:=-lcrypto -lssl -ljsoncpp
 
 all: dir network2 network_client network_server network_local_server accepted_client client client_bin
 

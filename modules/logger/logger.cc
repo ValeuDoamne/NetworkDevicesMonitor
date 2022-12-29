@@ -17,23 +17,14 @@ void logger(const Config& configuration)
 
 	net::client client{configuration.agent_socket_file, false};
 	client.connect();
-	
+
 	send_create_table_message(client, configuration.table_name, configuration.create_table);
+
 	std::vector<std::string> last_lines(configuration.files.size(), "");
 
-
-	auto event_handler = [&client, &configuration](const std::vector<std::string>& files, const inotify_event& event)
+	auto event_handler = [&client, &configuration](const std::string& filename)
 	{
-		std::string filename = "";
-
-		if(event.len > 0)
-		{
-			filename = files[event.wd-1] + "/" + event.name; 
-		} else {
-			filename = files[event.wd-1];
-		}
 		auto last_line = get_last_line(filename);
-		escape_quote(last_line);
 		send_insert_table(client, configuration.table_name, last_line, filename);
 	};
 	
