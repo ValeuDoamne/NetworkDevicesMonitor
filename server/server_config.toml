@@ -8,6 +8,6 @@ certificate_key_file = "./key.pem"
 [database]
 hostname = "localhost"
 port     = 5432
-username = "anon"
-password = "anon"
-db_name  = "anon"
+username = "cosmin"
+password = "cosmin"
+db_name  = "cosmin"
