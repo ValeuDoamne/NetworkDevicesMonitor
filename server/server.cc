@@ -4,17 +4,16 @@
 #include <future>
 #include <sys/wait.h>
 #include <cstdarg>
+#include <chrono>
 
 #include "network/network.h"
 #include "network/server.h"
 
 #include <pqxx/pqxx>
-
 #include "headers/server_config.h"
-
+#include "components/desktop_server.h"
 
 pqxx::connection *db_connection;
-
 
 void create_table(const Json::Value& agent_value)
 {
@@ -47,7 +46,7 @@ void insert_table(const Json::Value& agent_value, const std::string& host_str)
 	std::string query = "INSERT INTO "+txn.esc(agent_value["table_name"].as<std::string>())+"(host, date, ";
 	std::string values = " VALUES ('" + host_str + "', CURRENT_DATE, " ;
 	auto columns = agent_value["columns"];
-	for(int i = 0; i < columns.size(); i++)
+	for(unsigned int i = 0; i < columns.size(); i++)
 	{
 		auto column_name = columns[i]["column_name"].as<std::string>();
 		auto information = columns[i]["information"].as<std::string>();
@@ -78,6 +77,7 @@ void process_json(const Json::Value& agent_value, const std::string& host_str)
 
 void handle_agent(const std::string& thread_id, net::accepted_client& agent)
 {
+	std::cerr << "[DEBUG]: " << thread_id << std::endl;
 	while(agent.is_connected()) {
 		auto json = agent.receive_message();
 		std::cout << "Received from agent: " << json << std::endl;
@@ -105,10 +105,16 @@ void server(const Config& configuration)
 	agent_server.listen();
 	
 	int thread_id = 0;
+
 	while(true)
 	{
 		net::accepted_client agent = agent_server.accept_connection();
-		auto t = std::async(handle_agent, "Thread #"+std::to_string(thread_id++), std::ref(agent));
+		if(++thread_id < configuration.number_of_connections) {
+			auto throw_away = std::async(handle_agent, "Thread #"+std::to_string(thread_id), std::ref(agent));
+		} else {
+			agent.close_connection();
+		}
+
 	}
 	agent_server.close_connection();
 	
@@ -117,13 +123,22 @@ void server(const Config& configuration)
 }
 
 
+
 int main(int argc, char **argv)
 {
 	Config configuration;
 	std::string configuration_path = "./server_config.toml";
 	parse_command_line_arguments(argc, argv, configuration_path);
 	parse_configuration(configuration, configuration_path);
-
-	server(configuration);
+	/*
+	pid_t child = fork();
+	if(child == 0) {
+	} else if(child == -1)
+	{
+		perror("Error in creating the desktop clients server");
+	}
+	*/	
+	desktop_server(configuration);
+	//server(configuration);
 	return 0;
 }
