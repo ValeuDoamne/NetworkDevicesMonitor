@@ -110,7 +110,16 @@ std::string net::client::receive_message()
 	if(this->ssl_enabled){
 		SSL_read(this->ssl_socket, &length, sizeof(uint64_t));
 		buffer = new char[length+1];
-		SSL_read(this->ssl_socket, buffer, length);
+		
+		int receive_length = 0;
+		while(receive_length < length) {
+			uint64_t current_length = 4096 < length - receive_length ? 4096 : length - receive_length;
+			receive_length += SSL_read(this->ssl_socket, buffer+receive_length, current_length);
+		}
+		if(length != receive_length)
+		{
+			this->error_handle("The length is not the same "+std::to_string(length) + " " + std::to_string(receive_length));
+		}
 	} else {
 		read(this->socketfd, &length, sizeof(uint64_t));
 		buffer = new char[length+1];

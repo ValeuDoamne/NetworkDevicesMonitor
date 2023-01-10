@@ -16,6 +16,7 @@ std::string handle_command(const Json::Value& root)
 {
 	static CommandManager manager;
 	Json::Value result;
+	Json::FastWriter w;;
 	manager.add_command((Command *)(new LogIn(db_connection_users)));
 	manager.add_command((Command *)(new LogOut));
 	manager.add_command((Command *)(new GetData(db_connection)));
@@ -23,7 +24,6 @@ std::string handle_command(const Json::Value& root)
 	auto received_command = root["command"].as<std::string>();
 	for(const auto& command : manager.get_commands())
 	{
-		std::cerr << "[Debug]: Trying command " << command->name() << std::endl;
 		if(command->name() == received_command)
 		{
 			std::cerr << "[Debug]: Command is executed " << command->name() << std::endl;
@@ -31,7 +31,7 @@ std::string handle_command(const Json::Value& root)
 			break;
 		}
 	}
-	return result.toStyledString();
+	return w.write(result);
 }
 
 void handle_client(net::accepted_client& client)
@@ -62,6 +62,7 @@ void setup_db_commands(const Config& configuration)
 	db_connection_users = new pqxx::connection{"postgresql://"+configuration.username+":"+configuration.password+"@"+configuration.db_host+":"+std::to_string(configuration.db_port)+"/"+configuration.db_users};
 
 	db_connection->prepare("get_tables", "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public';");
+	db_connection->prepare("get_columns", "SELECT string_agg(column_name, ', ' order by ordinal_position) as columns FROM information_schema.columns WHERE table_name = $1 GROUP BY table_name;");
 	
 	db_connection_users->prepare("login", "SELECT * FROM users WHERE username=$1 AND password=encode(digest($2, 'sha512'), 'hex');");
 
@@ -76,7 +77,6 @@ void desktop_server(const Config& configuration)
 	if(configuration.server_secure_connection)
 		clients_server.set_certificate_path(configuration.server_certificate, configuration.server_certificate_key);
 	clients_server.listen();	
-
 	while(true)
 	{
 		auto new_client = clients_server.accept_connection();

@@ -3,6 +3,7 @@
 #include <json/json.h>
 #include <QString>
 #include <QMessageBox>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -30,8 +31,8 @@ Json::Value to_json(std::string s)
 
 void MainWindow::on_pushButton_clicked()
 {
-    QString username = ui->username->toPlainText();
-    QString password = ui->password->toPlainText();
+    QString username = ui->username->text();
+    QString password = ui->password->text();
 
     Json::Value root;
     root["command"] = "login";
@@ -45,9 +46,9 @@ void MainWindow::on_pushButton_clicked()
 
     if(json_message["status"].as<std::string>() == "success")
     {
-        auto token = json_message["token"].as<std::string>();
+        std::string token = json_message["token"].as<std::string>();
         this->hide();
-        this->page = new mainpage(this);
+        this->page = new mainpage(this, this->client, token);
         this->page->show();
     }
 }

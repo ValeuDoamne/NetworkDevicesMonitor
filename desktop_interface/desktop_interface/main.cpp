@@ -2,9 +2,12 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QFile>
 #include <iostream>
 #include "desktop_config.h"
 #include "network/client.h"
+
+#include "mainpage.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,7 +16,9 @@ int main(int argc, char *argv[])
     parse_command_line_arguments(argc, argv, configuration_path);
     parse_configuration(configuration, configuration_path);
 
+
     QApplication a(argc, argv);
+
     MainWindow w;
     net::client *desktop_connection;
 

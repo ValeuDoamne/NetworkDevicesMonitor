@@ -70,7 +70,17 @@ void send_message_secure_tcp(SSL* ssl_sock, const std::string& s)
 {
 	uint64_t length = s.length();	
 	SSL_write(ssl_sock, (uint64_t *)&length, sizeof(uint64_t));
-	SSL_write(ssl_sock, s.c_str(), s.length());
+//	SSL_write(ssl_sock, s.c_str(), s.length());
+
+	auto chunk = new char[s.length()+1];
+	strncpy(chunk, s.c_str(), s.length());
+	for(int i = 0; i < s.length(); i += 4096)
+	{
+		int send_length = 4096 < s.length() - i ? 4096 : s.length() - i;
+		SSL_write(ssl_sock, chunk+i, send_length);
+	}
+	delete[] chunk;
+	
 }
 
 void send_message_plaintext_udp(const int& socketfd, const std::string& s, struct sockaddr_storage client_addr, socklen_t client_addr_len)
