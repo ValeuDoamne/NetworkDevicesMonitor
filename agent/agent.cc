@@ -13,6 +13,18 @@
 
 #include "agent_config.h"
 
+bool is_valid_json(const std::string& json)
+{
+	Json::Value value;
+	try {
+		std::istringstream stream(json);
+		stream >> value;
+	} catch (const std::exception& e)
+	{
+		return false;
+	}
+	return true;
+}
 
 void agent(const Config& configuration)
 {
@@ -28,8 +40,8 @@ void agent(const Config& configuration)
 		agent_server.select(
 			[&agent_client](net::accepted_client& client) {
 				auto json_message = client.receive_message();
-				std::cerr << "[DEBUGS]: " << json_message << std::endl;
-				if(client.is_connected())
+				std::cerr << "[DEBUG]: " << json_message << std::endl;
+				if(client.is_connected() && is_valid_json(json_message))
 					agent_client.send_message(json_message);
 			}, 1);
 		
@@ -51,7 +63,12 @@ int main(int argc, char **argv)
 	
 	parse_command_line_arguments(argc, argv, config_path);
 	parse_configuration(configuration, config_path);
-	agent(configuration);
+	int demon = daemon(0, 0);
+	if(demon == 0){
+		agent(configuration);
+	} else {
+		perror("Cannot daemonize process");
+	}
 
 	return 0;
 }

@@ -1,7 +1,7 @@
 
 CXX:=g++
 CXXFLAGS:=-O2 -Wall -ggdb
-LDFLAGS:=-lcrypto -lssl
+LDFLAGS:=-lcrypto -lssl -ljsoncpp
 
 all: dir network2 network_client network_server network_local_server accepted_client client client_bin
 
@@ -10,22 +10,22 @@ dir:
 
 
 network_client:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/network_client.o ./network/client.cc
+	${CXX} ${CXXFLAGS}  -c -o ./out/network_client.o ./network/client.cc
 
 network2:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/network.o ./network/network.cc
+	${CXX} ${CXXFLAGS}  -c -o ./out/network.o ./network/network.cc
 
 network_server:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/network_server.o ./network/server.cc
+	${CXX} ${CXXFLAGS}  -c -o ./out/network_server.o ./network/server.cc
 
 network_local_server:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/network_local_server.o ./network/local_server.cc
+	${CXX} ${CXXFLAGS}  -c -o ./out/network_local_server.o ./network/local_server.cc
 
 accepted_client:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/network_accepted_client.o ./network/accepted_client.cc
+	${CXX} ${CXXFLAGS}  -c -o ./out/network_accepted_client.o ./network/accepted_client.cc
 
 client:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/logger.o ./logger.cc
+	${CXX} ${CXXFLAGS}  -c -o ./out/logger.o ./logger.cc
 
 client_bin:
 	${CXX} ${CXXFLAGS} ${LDFLAGS} -o ./out/logger ./out/logger.o ./out/network.o ./out/network_client.o ./out/network_accepted_client.o ./out/network_local_server.o

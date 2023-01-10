@@ -3,32 +3,28 @@ CXX:=g++
 CXXFLAGS:=-O2 -Wall -ggdb -std=c++23
 LDFLAGS:=-lcrypto -lssl -lpq -lpqxx -ljsoncpp
 
-all: dir network2 network_client network_server network_local_server accepted_client server server_bin
+all: dir network_unmade  desktop_server agent_server main server_bin
 
 dir:
 	mkdir -p ./out
 
+network_unmade:
+	${CXX} ${CXXFLAGS} -c -o ./out/network.o ./network/network.cc
+	${CXX} ${CXXFLAGS} -c -o ./out/network_server.o ./network/server.cc
+	${CXX} ${CXXFLAGS} -c -o ./out/network_accepted_client.o ./network/accepted_client.cc
 
-network_client:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/network_client.o ./network/client.cc
+desktop_server:
+	${CXX} ${CXXFLAGS} -c -o ./out/desktop_commands.o ./components/desktop_server/desktop_commands.cc
+	${CXX} ${CXXFLAGS} -c -o ./out/desktop_server.o ./components/desktop_server/desktop_server.cc
 
-network2:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/network.o ./network/network.cc
+agent_server:
+	${CXX} ${CXXFLAGS} -c -o ./out/agent_server.o ./components/agent_server/agent_server.cc
 
-network_server:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/network_server.o ./network/server.cc
-
-network_local_server:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/network_local_server.o ./network/local_server.cc
-
-accepted_client:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/network_accepted_client.o ./network/accepted_client.cc
-
-server:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -c -o ./out/server.o server.cc
+main:
+	${CXX} ${CXXFLAGS} -c -o ./out/main.o ./server.cc
 
 server_bin:
-	${CXX} ${CXXFLAGS} ${LDFLAGS} -o ./out/server ./out/server.o ./out/network_local_server.o ./out/network_server.o ./out/network.o ./out/network_accepted_client.o
+	${CXX} ${CXXFLAGS} ${LDFLAGS} -o ./out/server ./out/main.o ./out/agent_server.o ./out/desktop_server.o ./out/desktop_commands.o ./out/network_server.o ./out/network.o ./out/network_accepted_client.o
 
 
 clean:

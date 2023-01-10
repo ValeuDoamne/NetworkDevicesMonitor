@@ -1,4 +1,11 @@
 [module]
-socket_file = "/tmp/agent.pid"
-timeout     = 1
-files       = ["/var/log/messages"]
+socket_file  = "/tmp/agent.pid"
+timeout      = 1
+files        = ["/proc/", "/var/log"]
+
+table_name   = "logs"
+
+create_table = '''[
+		            {"column_name" : "file",    "type": "TEXT"}, 
+		            {"column_name" : "message", "type": "TEXT"}, 
+		  ]'''

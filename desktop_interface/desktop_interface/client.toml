@@ -1,0 +1,4 @@
+[client]
+hostname = "localhost"
+port = 7777
+secure = true
