@@ -36,7 +36,7 @@ public:
 	GetData(pqxx::connection *conn)
 		:Command(conn) { }
 	virtual Json::Value command(const Json::Value& root) override;
-	virtual std::string name() const override {return "getdata";}
+	virtual std::string name() const override {return "get_data";}
 };
 
 class CommandManager
