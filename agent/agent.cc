@@ -63,12 +63,12 @@ int main(int argc, char **argv)
 	
 	parse_command_line_arguments(argc, argv, config_path);
 	parse_configuration(configuration, config_path);
-	//int demon = daemon(0, 0);
-//	if(demon == 0){
+	int demon = daemon(0, 0);
+	if(demon == 0){
 		agent(configuration);
-	//} else {
-//		perror("Cannot daemonize process");
-//	}
+	} else {
+		perror("Cannot daemonize process");
+	}
 
 	return 0;
 }
