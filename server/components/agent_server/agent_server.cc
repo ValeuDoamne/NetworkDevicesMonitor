@@ -7,6 +7,7 @@
 #include <future>
 #include <json/json.h>
 #include <pqxx/pqxx>
+#include <pthread.h>
 
 static pqxx::connection *db_connection;
 
@@ -70,9 +71,9 @@ void process_json(const Json::Value& agent_value, const std::string& host_str)
 	}
 }
 
-void handle_agent(const std::string& thread_id, net::accepted_client& agent)
+void *handle_agent(void *agent_ptr)
 {
-	std::cerr << "[DEBUG]: " << thread_id << std::endl;
+	auto agent = *(net::accepted_client *)agent_ptr;
 	while(agent.is_connected()) {
 		auto json = agent.receive_message();
 		std::cout << "Received from agent: " << json << std::endl;
@@ -88,6 +89,7 @@ void handle_agent(const std::string& thread_id, net::accepted_client& agent)
 		process_json(agent_value, agent.get_host());
 	}
 	agent.close_connection();
+	pthread_exit(0);
 }
 
 
@@ -103,11 +105,13 @@ void server(const Config& configuration)
 
 	while(true)
 	{
-		net::accepted_client agent = agent_server.accept_connection();
+		auto agent = new net::accepted_client{agent_server.accept_connection()};
 		if(++thread_id < configuration.number_of_connections) {
-			auto throw_away = std::async(handle_agent, "Thread #"+std::to_string(thread_id), std::ref(agent));
+			pthread_t thread;
+			pthread_create(&thread, NULL, handle_agent, agent);
+			pthread_detach(thread);
 		} else {
-			agent.close_connection();
+			agent->close_connection();
 		}
 
 	}
