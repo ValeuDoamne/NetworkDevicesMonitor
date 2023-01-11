@@ -27,7 +27,6 @@ std::string handle_command(const Json::Value& root)
 	{
 		if(command->name() == received_command)
 		{
-			std::cerr << "[Debug]: Command is executed " << command->name() << std::endl;
 			result = command->command(root);
 			break;
 		}
@@ -41,7 +40,6 @@ void *handle_client(void *client_ptr)
 	while(client.is_connected())
 	{
 		auto json = client.receive_message();
-		std::cerr << "[Debug]: Receive from client: " << json << std::endl;
 		Json::Value root;
 		try {
 			std::istringstream stream(json);
@@ -51,7 +49,6 @@ void *handle_client(void *client_ptr)
 		}
 
 		auto send_back = handle_command(root);
-		std::cerr << "[Debug]: Sending back to client: " << send_back << std::endl;
 		client.send_message(send_back);
 	}
 	client.close_connection();
@@ -75,15 +72,14 @@ void desktop_server(const Config& configuration)
 {
 	setup_db_commands(configuration);
 
-	std::cout << "[DEBUG]: " << configuration.clients_hostname << ":" << configuration.clients_port << std::endl;
 	net::server clients_server(configuration.clients_hostname, configuration.clients_port, net::protocol::TCP, configuration.clients_number_of_connections, configuration.clients_server_secure_connection);
 	if(configuration.server_secure_connection)
 		clients_server.set_certificate_path(configuration.server_certificate, configuration.server_certificate_key);
 	clients_server.listen();	
 	while(true)
 	{
-		auto new_client = new  net::accepted_client{clients_server.accept_connection()};
-		std::cout << "[DEBUG]:" << new_client->get_host() << ":" << new_client->get_port() << std::endl;
+		auto new_client = clients_server.accept_connection();
+		std::cout << "[INFO]:" << new_client.get_host() << ":" << new_client.get_port() << std::endl;
 		std::cout.flush();
 		//std::async(handle_client, new_client);
 		//handle_client(new_client);

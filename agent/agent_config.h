@@ -4,7 +4,6 @@
 struct Config {
 	/* Agent Setup */
 	std::string agent_socket_file;
-	std::vector<std::string> modules;
 	uint32_t    number_of_connections;
 		
 
@@ -23,14 +22,6 @@ void parse_configuration(Config& configuration, const std::string& config_path)
 		configuration.agent_socket_file		= tbl["agent"]["socket_file"].value_or("/run/agentd.pid");
 		configuration.number_of_connections     = tbl["agent"]["number_of_connections"].value_or(10);
 
-		if(toml::array *arr = tbl["agent"]["modules"].as_array())
-		{
-			arr->for_each([&configuration](auto&& el)
-					{
-						if constexpr (toml::is_string<decltype(el)>)
-							configuration.modules.push_back(*el);
-					});
-		}
 	
 		configuration.server_host               = tbl["server"]["hostname"].value_or("localhost");
 		configuration.server_port		= tbl["server"]["port"].value_or(8888);
