@@ -1,4 +1,0 @@
-
-
-Check json query in agent 
-{"cmd":"insert_table", "table_name": "logs", "columns" : [{"column_name": "message", "information" : "[2022-12-28T03:22:22+0200] [ALPM] running \'30-systemd-update.hook\'..."}, {"column_name" : "file", "information": "/var/log/pacman.log"}]}

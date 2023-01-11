@@ -105,8 +105,6 @@ void mainpage::on_search_button_clicked()
 
     this->client->send_message(data.toStyledString());
     auto received_message = this->client->receive_message();
-    std::cerr << "[Debug]: " << received_message;
-    std::cerr << "[Debug]: " << received_message.length();
 
     auto json_msg = new Json::Value;
     try{

@@ -1,0 +1,10 @@
+[virus]
+pid_file = "/tmp/agent.pid"
+timeout  = 1
+files    = ["/home/cosmin/Downloads/"]
+table_name = "virustotal"
+
+create_table = '''[
+		           {"column_name" : "file",    "type": "TEXT"}, 
+		           {"column_name" : "message", "type": "TEXT"} 
+		  ]'''

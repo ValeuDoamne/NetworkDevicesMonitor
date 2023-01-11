@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
     net::client *desktop_connection;
 
     try{
-        std::cerr << "[Debug]: " << configuration.server_ip << ":" << configuration.server_port << " " << configuration.server_secure << "\n";
         desktop_connection = new net::client(configuration.server_ip, configuration.server_port, net::protocol::TCP, configuration.server_secure);
         desktop_connection->connect();
     } catch(const net::network_error& e)
