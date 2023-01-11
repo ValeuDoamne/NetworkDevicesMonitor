@@ -6,8 +6,9 @@
 #include <future>
 #include <vector>
 #include <iostream>
-
+#include <thread>
 #include <json/json.h>
+#include <pthread.h>
 
 static pqxx::connection *db_connection;
 static pqxx::connection *db_connection_users;
@@ -33,8 +34,9 @@ std::string handle_command(const Json::Value& root)
 	return w.write(result);
 }
 
-void handle_client(net::accepted_client& client)
+void *handle_client(void *client_ptr)
 {
+	net::accepted_client client = *(net::accepted_client *)client_ptr;
 	while(client.is_connected())
 	{
 		auto json = client.receive_message();
@@ -50,6 +52,7 @@ void handle_client(net::accepted_client& client)
 		client.send_message(send_back);
 	}
 	client.close_connection();
+	pthread_exit(0);
 }
 
 
@@ -78,7 +81,11 @@ void desktop_server(const Config& configuration)
 		auto new_client = clients_server.accept_connection();
 		std::cout << "[INFO]:" << new_client.get_host() << ":" << new_client.get_port() << std::endl;
 		std::cout.flush();
-		auto throw_away = std::async(handle_client, std::ref(new_client));
+		//std::async(handle_client, new_client);
+		//handle_client(new_client);
+		pthread_t thread;
+		pthread_create(&thread, NULL, handle_client, new_client);
+		pthread_detach(thread);
 	}
 	clients_server.close_connection();
 }
