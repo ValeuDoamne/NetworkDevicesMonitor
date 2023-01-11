@@ -5,12 +5,6 @@
 #include <iostream>
 #include <QTableView>
 #include <QStandardItem>
-#include <QtCharts/QBarSet>
-#include <QtCharts/QBarSeries>
-#include <QtCharts/QBarCategoryAxis>
-#include <QtCharts/QValueAxis>
-#include <QtCharts/QChart>
-#include <QtCharts/QChartView>
 #include "mainwindow.h"
 
 Json::Value get_json(const std::string& s)
@@ -91,7 +85,6 @@ void mainpage::on_table_button_clicked()
 {
 }
 
-using namespace QtCharts;
 
 void mainpage::on_search_button_clicked()
 {
@@ -105,8 +98,6 @@ void mainpage::on_search_button_clicked()
 
     this->client->send_message(data.toStyledString());
     auto received_message = this->client->receive_message();
-    std::cerr << "[Debug]: " << received_message;
-    std::cerr << "[Debug]: " << received_message.length();
 
     auto json_msg = new Json::Value;
     try{

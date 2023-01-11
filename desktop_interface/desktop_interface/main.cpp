@@ -7,20 +7,17 @@
 #include "desktop_config.h"
 #include "network/client.h"
 
-#include "mainpage.h"
-
 int main(int argc, char *argv[])
 {
     std::string configuration_path = "client.toml";
     Config configuration;
     parse_command_line_arguments(argc, argv, configuration_path);
     parse_configuration(configuration, configuration_path);
-
-
     QApplication a(argc, argv);
 
     MainWindow w;
     net::client *desktop_connection;
+    w.show();
 
     try{
         std::cerr << "[Debug]: " << configuration.server_ip << ":" << configuration.server_port << " " << configuration.server_secure << "\n";
@@ -32,6 +29,5 @@ int main(int argc, char *argv[])
     }
     w.setClient(desktop_connection);
 
-    w.show();
     return a.exec();
 }
