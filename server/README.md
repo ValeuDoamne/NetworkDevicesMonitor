@@ -8,7 +8,12 @@ The server is communicating ecrypted using TLS with the agents and the clients.
 
 ## Building
 
-In a terminal inside the server directory run:
+For secure connection a certificat must be create using the following command:
+```
+$ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365
+```
+
+For building the server, run in a terminal inside the server directory run:
 ```
 $ make
 ```
