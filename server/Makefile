@@ -1,7 +1,7 @@
 
 CXX:=g++
-CXXFLAGS:=-O2 -Wall -ggdb -std=c++23
-LDFLAGS:=-lcrypto -lssl -lpq -lpqxx -ljsoncpp -lpthread
+CXXFLAGS:=-O2 -Wall -ggdb -std=c++23 -I/usr/include/jsoncpp
+LDFLAGS:=-lcrypto -lssl -lpq -lpqxx -ljsoncpp -lpthread 
 
 all: dir network_unmade  desktop_server agent_server main server_bin
 

@@ -78,8 +78,8 @@ void desktop_server(const Config& configuration)
 	clients_server.listen();	
 	while(true)
 	{
-		auto new_client = clients_server.accept_connection();
-		std::cout << "[INFO]:" << new_client.get_host() << ":" << new_client.get_port() << std::endl;
+		auto new_client = new net::accepted_client{clients_server.accept_connection()};
+		std::cout << "[INFO]:" << new_client->get_host() << ":" << new_client->get_port() << std::endl;
 		std::cout.flush();
 		//std::async(handle_client, new_client);
 		//handle_client(new_client);
