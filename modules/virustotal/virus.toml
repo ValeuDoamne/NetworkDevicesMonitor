@@ -6,5 +6,5 @@ table_name = "virustotal"
 
 create_table = '''[
 		           {"column_name" : "file",    "type": "TEXT"}, 
-		           {"column_name" : "message", "type": "TEXT"} 
+		           {"column_name" : "scan_results", "type": "TEXT"} 
 		  ]'''
